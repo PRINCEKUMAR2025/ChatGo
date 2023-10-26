@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202857581315",
+    "project_id": "chat-app-ff6e4",
+    "storage_bucket": "chat-app-ff6e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202857581315:android:557224b187a22853c27736",
+        "android_client_info": {
+          "package_name": "com.example.chatcraze"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDA6Tys_YSXdukvhgdzzCFIf0QrTw-mnBQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
