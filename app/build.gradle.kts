@@ -51,4 +51,8 @@ dependencies {
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
+    implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
+
+    implementation("com.airbnb.android:lottie:3.7.0")
 }
