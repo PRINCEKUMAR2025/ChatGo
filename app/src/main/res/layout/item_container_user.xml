@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/_5sdp"
-    android:background="@drawable/background_chat_input"
+    android:background="@drawable/background_main_page_names"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="@dimen/_8sdp">
 

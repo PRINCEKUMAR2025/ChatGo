@@ -24,6 +24,8 @@ public class SplashScreen extends AppCompatActivity {
         Lottie=findViewById(R.id.Lottie);
 
         appName.animate().translationY(-1400).setDuration(2700).setStartDelay(0);
+        Lottie.animate().rotation(200);
+        Lottie.animate().rotationX(100);
         Lottie.animate().translationY(2000).setDuration(2000).setStartDelay(2900);
 
         new Handler().postDelayed(new Runnable() {
