@@ -23,6 +23,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton;
+import com.zegocloud.uikit.service.defines.ZegoUIKitUser;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.json.JSONArray;
@@ -55,15 +57,32 @@ public class ChatActivity extends BaseActivity {
     private String conversionId = null;
     private Boolean isReceiverAvailable  = false;
 
+    ZegoSendCallInvitationButton btnVideoCall;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        btnVideoCall=findViewById(R.id.btnVideoCall);
         setListeners();
         loadReceiverDetails();
         init();
         listenMessages();
+    }
+
+    void VideoCall(String callingUser){
+        btnVideoCall.setIsVideoCall(true);
+        btnVideoCall.setResourceID("zego_uikit_call");
+        btnVideoCall.setInvitees(Collections.singletonList(new ZegoUIKitUser(callingUser,callingUser)));
+    }
+
+    private void call(){
+        recieverUser = (User) getIntent().getSerializableExtra(Constants.KEY_USER);
+        assert recieverUser != null;
+        String callingUser= recieverUser.id;
+        VideoCall(callingUser);
     }
 
     private void init(){
@@ -248,6 +267,7 @@ public class ChatActivity extends BaseActivity {
     private void setListeners(){
         binding.imageBack.setOnClickListener(v -> onBackPressed());
         binding.layoutSend.setOnClickListener(v -> sendMessage());
+        binding.btnVideoCall.setOnClickListener(v -> call());
     }
 
     private String getReadableDateTime(Date date){

@@ -1,6 +1,7 @@
 package com.example.chatcraze.activities;
 
 
+import android.app.Application;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -23,6 +24,9 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.zegocloud.uikit.prebuilt.call.config.ZegoNotificationConfig;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,12 +41,18 @@ public class MainActivity extends BaseActivity implements ConversionListener {
     private RecentConversationsAdapter conversationsAdapter;
     private FirebaseFirestore database;
 
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         preferenceManager = new PreferenceManager(getApplicationContext());
+        String username= preferenceManager.getString(Constants.KEY_USER_ID);
+        proceedService(username);
         init();
         loadUserDetails();
         getToken();
@@ -138,6 +148,21 @@ public class MainActivity extends BaseActivity implements ConversionListener {
 
         documentReference.update(Constants.KEY_FCM_TOKEN,token)
                 .addOnFailureListener(e -> showToast("Unable to update token"));
+    }
+
+    void proceedService(String userID){
+        Application application = getApplication(); // Android's application context
+        long appID = 1569463933;   // yourAppID
+        String appSign ="d3b9b7fd4415dc4a920d9f846a8b3ba02e61966b5d40e1b8acaf13bef55b17dd";  // yourAppSign
+        String userName = userID;   // yourUserName
+
+        ZegoUIKitPrebuiltCallInvitationConfig callInvitationConfig = new ZegoUIKitPrebuiltCallInvitationConfig();
+        callInvitationConfig.notifyWhenAppRunningInBackgroundOrQuit = true;
+        ZegoNotificationConfig notificationConfig = new ZegoNotificationConfig();
+        notificationConfig.sound = "zego_uikit_sound_call";
+        notificationConfig.channelID = "CallInvitation";
+        notificationConfig.channelName = "CallInvitation";
+        ZegoUIKitPrebuiltCallInvitationService.init(getApplication(), appID, appSign, userID, userName,callInvitationConfig);
     }
 
     private void signOut(){
