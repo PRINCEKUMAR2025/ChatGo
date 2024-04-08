@@ -152,8 +152,8 @@ public class MainActivity extends BaseActivity implements ConversionListener {
 
     void proceedService(String userID){
         Application application = getApplication(); // Android's application context
-        long appID = 1913746740;   // yourAppID
-        String appSign ="110d82ef2df426bcb98d978767fc667f010f268595e0934623e87c28ff309bf1";  // yourAppSign
+        long appID = 1363397559;   // yourAppID
+        String appSign ="0ba0ceb3742e6586f066b50a3b0981090827c41175e44256bb7ba95cf14ba854";  // yourAppSign
         String userName = userID;   // yourUserName
 
         ZegoUIKitPrebuiltCallInvitationConfig callInvitationConfig = new ZegoUIKitPrebuiltCallInvitationConfig();

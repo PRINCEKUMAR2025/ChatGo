@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -17,6 +18,13 @@ import com.example.chatcraze.network.ApiService;
 import com.example.chatcraze.utilities.Constants;
 import com.example.chatcraze.utilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -42,6 +50,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,8 +68,10 @@ public class ChatActivity extends BaseActivity {
     private FirebaseFirestore database;
     private String conversionId = null;
     private Boolean isReceiverAvailable  = false;
+    public static String SECRET_KEY;
 
     ZegoSendCallInvitationButton btnVideoCall;
+    FirebaseFirestore secretKeyRef = FirebaseFirestore.getInstance();
 
 
     @Override
@@ -66,10 +80,31 @@ public class ChatActivity extends BaseActivity {
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         btnVideoCall=findViewById(R.id.btnVideoCall);
+        getSecretKey();
         setListeners();
         loadReceiverDetails();
         init();
         listenMessages();
+    }
+
+    void getSecretKey(){
+        DocumentReference document = secretKeyRef.collection("secretkey").document("secretkey1");
+        document.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()){
+                    SECRET_KEY = documentSnapshot.getString("key");
+                }else{
+                    Toast.makeText(ChatActivity.this, "secret key not available to encrypt message..", Toast.LENGTH_SHORT).show();
+                }
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@androidx.annotation.NonNull Exception e) {
+                        Toast.makeText(ChatActivity.this, "secret key not available to encrypt message..", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     void VideoCall(String callingUser){
@@ -97,11 +132,46 @@ public class ChatActivity extends BaseActivity {
         database = FirebaseFirestore.getInstance();
     }
 
+
+    //                           AES                          //
+    private static final String ENCRYPTION_ALGORITHM = "AES";
+//    private static final String SECRET_KEY = "YourSecretKeyFor"; // Replace with your secret key
+
+    // Encrypt a message using AES encryption with a key and encode with Base64
+    public static String encryptMessage(String message) {
+        try {
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
+            SecretKey secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), ENCRYPTION_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(message.getBytes());
+            return Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Decode Base64 and decrypt using AES with the key
+    public static String decryptMessage(String encodedMessage) {
+        try {
+            byte[] encryptedBytes = Base64.decode(encodedMessage, Base64.DEFAULT);
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
+            SecretKey secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), ENCRYPTION_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+            return new String(decryptedBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+//        AES END           //
     private void sendMessage(){
         HashMap<String , Object> message = new HashMap<>();
         message.put(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID,recieverUser.id);
-        message.put(Constants.KEY_MESSAGE,binding.inputMessage.getText().toString());
+        message.put(Constants.KEY_MESSAGE,encryptMessage(binding.inputMessage.getText().toString()));
         message.put(Constants.KEY_TIMESTAMP,new Date());
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
         if (conversionId != null){
@@ -229,7 +299,7 @@ public class ChatActivity extends BaseActivity {
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
-                    chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
+                    chatMessage.message = decryptMessage(documentChange.getDocument().getString(Constants.KEY_MESSAGE));
                     chatMessage.dateTime= getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dateObject=documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     chatMessages.add(chatMessage);
