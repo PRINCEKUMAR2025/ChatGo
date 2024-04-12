@@ -80,7 +80,6 @@ public class ChatActivity extends BaseActivity {
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         btnVideoCall=findViewById(R.id.btnVideoCall);
-        getSecretKey();
         setListeners();
         loadReceiverDetails();
         init();
@@ -387,5 +386,11 @@ public class ChatActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         listenAvailabilityOfReceiver();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getSecretKey();
     }
 }
